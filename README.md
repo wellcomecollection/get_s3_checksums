@@ -1,6 +1,6 @@
 # get_s3_checksums
 
-This is a script for getting the checksums of objects in Amazon S3.
+This is a script for getting checksums of objects in Amazon S3.
 Given an S3 prefix, it creates a spreadsheet with the checksums of all the objects under that prefix.
 You can choose which checksum algorithms to use.
 
@@ -12,9 +12,9 @@ This gives you a spreadsheet like:
 
 ```csv
 bucket,key,size,ETag,last_modified,checksum.md5,checksum.sha1
-example-bucket,photos/cat.jpg,139822,"""ec8fb43fb991a5d916ccfc96abb04b6f""",2021-10-07T07:01:20+00:00,ec8fb43fb991a5d916ccfc96abb04b6f,371ff932e114dd53eccca6e2ba28a4cc2ccb43d8
+example-bucket,photos/cat.jpg,13982,"""ec8fb43fb991a5d916ccfc96abb04b6f""",2021-10-07T07:01:20+00:00,ec8fb43fb991a5d916ccfc96abb04b6f,371ff932e114dd53eccca6e2ba28a4cc2ccb43d8
 example-bucket,photos/dog.png,73859,"""445c54935453d02e93014622a5c85130""",2021-09-07T04:57:37+00:00,445c54935453d02e93014622a5c85130,86dd6ab73192d0c98da80393778493996dc87834
-example-bucket,photos/otter.gif,323783,"""9ef628d1659d4a7afd75ae8db36dda10""",2021-08-19T11:29:06+00:00,9ef628d1659d4a7afd75ae8db36dda10,19a3030cbb7d9be0e65c9c6899feeb5b601ecef1
+example-bucket,photos/emu.gif,32378,"""9ef628d1659d4a7afd75ae8db36dda10""",2021-08-19T11:29:06+00:00,9ef628d1659d4a7afd75ae8db36dda10,19a3030cbb7d9be0e65c9c6899feeb5b601ecef1
 ```
 
 ## Installation
