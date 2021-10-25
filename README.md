@@ -83,7 +83,14 @@ The script writes the results to a CSV spreadsheet, and prints the name of the g
 
 ## Notes
 
-*
+*   The script can get the checksum of multiple objects concurrently.
+    You can control the concurrency with the `--concurrency` flag.
+
+    This may cause objects to be listed out of alphabetical order in the final spreadsheet.
+
+*   The final spreadsheet includes the size, ETag and VersionId (if available), so checksums can be accurately correlated to objects.
+
+    If a new object is uploaded after the checksum is generated, these values will change, so you'll know the checksum is no longer valid.
 
 ## License
 

@@ -6,13 +6,15 @@ This script creates a spreadsheet with the checksums of all the objects
 within a given S3 prefix.  Prints the name of the finished spreadsheet.
 
 Usage:
-    get_s3_checksums.py <S3_PREFIX> [--checksums=<CHECKSUMS>]
+    get_s3_checksums.py <S3_PREFIX> [--checksums=<CHECKSUMS>] [--concurrency=<CONCURRENCY>]
     get_s3_checksums.py (-h | --help)
 
 Options:
-    -h --help                Show this screen.
-    --checksums=<CHECKSUMS>  Comma-separated list of checksums to fetch.
-                             [default: md5,sha1,sha256,sha512]
+    -h --help                    Show this screen.
+    --checksums=<CHECKSUMS>      Comma-separated list of checksums to fetch.
+                                 [default: md5,sha1,sha256,sha512]
+    --concurrency=<CONCURRENCY>  Max number of objects to fetch from S3 at once.
+                                 [default: 5]
 """
 
 import csv
@@ -64,6 +66,7 @@ def main():
     args = docopt.docopt(__doc__)
 
     checksums = args["--checksums"].split(",")
+    max_concurrency = int(args["--concurrency"])
 
     for h in checksums:
         if h not in hashlib.algorithms_available:
@@ -90,6 +93,7 @@ def main():
         for _, output in concurrently(
             lambda s3_obj: get_s3_object_checksums(sess, **s3_obj, checksums=checksums),
             list_s3_objects(sess, bucket=bucket, prefix=prefix),
+            max_concurrency=max_concurrency
         ):
             writer.writerow(output)
 
