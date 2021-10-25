@@ -14,6 +14,7 @@ Options:
 
 import csv
 import hashlib
+import secrets
 import sys
 import urllib.parse
 
@@ -28,7 +29,7 @@ def list_s3_objects(sess, *, bucket, prefix):
     paginator = client.get_paginator("list_objects_v2")
 
     for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-        for s3_obj in page["Contents"]:
+        for s3_obj in page.get("Contents", []):
             yield {"bucket": bucket, "key": s3_obj["Key"]}
 
 
@@ -71,7 +72,9 @@ def main():
     bucket = urllib.parse.urlparse(s3_prefix).netloc
     prefix = urllib.parse.urlparse(s3_prefix).path.lstrip("/")
 
-    out_path = "checksums__" + s3_prefix.replace("s3://", "").replace("/", "_") + ".csv"
+    s3_slug = s3_prefix.replace("s3://", "").replace("/", "_")
+    random_suffix = secrets.token_hex(3)
+    out_path = f"checksums.{s3_slug}.{random_suffix}.csv"
 
     sess = boto3.Session()
 
@@ -83,8 +86,11 @@ def main():
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
         writer.writeheader()
 
-        for s3_obj in list_s3_objects(sess, bucket=bucket, prefix=prefix):
-            writer.writerow(get_s3_object_checksums(sess, **s3_obj, checksums=checksums))
+        for _, output in concurrently(
+            lambda s3_obj: get_s3_object_checksums(sess, **s3_obj, checksums=checksums),
+            list_s3_objects(sess, bucket=bucket, prefix=prefix)
+        ):
+            writer.writerow(output)
 
     print(out_path)
 
