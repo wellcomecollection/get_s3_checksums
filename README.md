@@ -19,7 +19,7 @@ example-bucket,photos/emu.gif,32378,"""9ef628d1659d4a7afd75ae8db36dda10""",ryQUD
 
 ## Installation
 
-You need Python 3 installed.
+You need Python 3 installed (3.8 or later).
 
 Clone this repository and install dependencies:
 
