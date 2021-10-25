@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """
-Get S3 checksums.
+Get checksums of objects in Amazon S3.
+
+This script creates a spreadsheet with the checksums of all the objects
+within a given S3 prefix.  Prints the name of the finished spreadsheet.
 
 Usage:
     get_s3_checksums.py <S3_PREFIX> [--checksums=<CHECKSUMS>]
@@ -34,10 +37,7 @@ def list_s3_objects(sess, *, bucket, prefix):
 
 
 def get_s3_object_checksums(sess, *, bucket, key, checksums):
-    hashes = {
-        name: hashlib.new(name)
-        for name in checksums
-    }
+    hashes = {name: hashlib.new(name) for name in checksums}
 
     s3_obj = sess.client("s3").get_object(Bucket=bucket, Key=key)
 
@@ -46,11 +46,12 @@ def get_s3_object_checksums(sess, *, bucket, key, checksums):
             hv.update(chunk)
 
     result = {
-        'bucket': bucket,
-        'key': key,
-        'size': s3_obj["ContentLength"],
-        'ETag': s3_obj["ETag"],
-        'last_modified': s3_obj["LastModified"].isoformat()
+        "bucket": bucket,
+        "key": key,
+        "size": s3_obj["ContentLength"],
+        "ETag": s3_obj["ETag"],
+        "VersionId": s3_obj.get("VersionId", ""),
+        "last_modified": s3_obj["LastModified"].isoformat(),
     }
 
     for name, hv in hashes.items():
@@ -78,17 +79,17 @@ def main():
 
     sess = boto3.Session()
 
-    fieldnames = ["bucket", "key", "size", "ETag", "last_modified"] + [
+    fieldnames = ["bucket", "key", "size", "ETag", "VersionId", "last_modified"] + [
         f"checksum.{name}" for name in checksums
     ]
 
-    with open(out_path, 'w') as outfile:
+    with open(out_path, "w") as outfile:
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
         writer.writeheader()
 
         for _, output in concurrently(
             lambda s3_obj: get_s3_object_checksums(sess, **s3_obj, checksums=checksums),
-            list_s3_objects(sess, bucket=bucket, prefix=prefix)
+            list_s3_objects(sess, bucket=bucket, prefix=prefix),
         ):
             writer.writerow(output)
 
